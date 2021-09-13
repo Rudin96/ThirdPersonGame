@@ -57,8 +57,6 @@ public class PlayerController : MonoBehaviour
         if(Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
         {
             _body.transform.Rotate(new Vector3(0f, Input.GetAxis("Mouse X"), 0f));
-
-            if(_rotator.transform.eulerAngles.x < CamMaxRotDegrees && (360f - _rotator.transform.eulerAngles.x) < CamMaxRotDegrees)
             _rotator.transform.Rotate(new Vector3(Input.GetAxis("Mouse Y"), 0f, 0f));
         }
 
@@ -67,9 +65,9 @@ public class PlayerController : MonoBehaviour
             _body.AddForce(new Vector3(0f, JumpStrength * 1000f, 0f), ForceMode.Force);
         }
 
-        //CheckCameraCollision();
+        CheckCameraCollision();
 
-        if(Input.GetButtonDown("Fire2"))
+        if (Input.GetButtonDown("Fire2"))
         {
             StartADS();
         }
