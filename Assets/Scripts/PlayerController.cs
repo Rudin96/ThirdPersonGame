@@ -7,47 +7,41 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _body;
     private Camera _cam;
     private Transform _rotator;
+    private Vector3 _baseCameraPos;
+    private Vector3 _currentCameraPos;
+    private float _currentBoomLength;
 
-    private float _cameraLength;
-
-    private Transform _adsPoint;
-
-    public float MovementSpeed = 5f;
+    [Header("Movement Properties")]
+    public float MovementSpeed = 20.0f;
     public float JumpStrength = 200f;
 
+    [Header("Camera Properties")]
+    public float TargetBoomLength = 20.0f;
+    public float AdsBoomLength = 10.0f;
+    public float CameraFOV = 75f;
+    public Vector3 BoomAddVector = new Vector3(0f, 10f, 0f);
+    public Vector3 BoomAddRotation = new Vector3(20f, 0f, 0f);
     public float AdsSpeed = 10f;
-    public float CameraBoomLength = 10f;
-    public float CamMaxRotDegrees = 90f;
-    public Vector3 BoomAddVector;
-    public Vector3 BoomAddRotation;
-    private Vector3 _camDirRaw;
-    private Vector3 _camDirNormalized;
-    private Vector3 _adsPos;
+    public Vector3 AdsPos;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         _body = GetComponent<Rigidbody>();
 
         _cam = GetComponentInChildren<Camera>();
 
-        _cameraLength = (_cam.transform.position - transform.position).magnitude;
-
-        _cam.transform.position = transform.position + ((transform.forward * -1) * CameraBoomLength);
-
-        //_body.drag = 15f;
-        //_body.mass = 10f;
-
-        Debug.Log(-CamMaxRotDegrees);
-
         _rotator = transform.Find("CameraRotator");
+
+        _cam.fieldOfView = CameraFOV;
+
+        _currentBoomLength = TargetBoomLength;
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        SetupCameraPositions();
-        if(Input.GetAxis("Vertical") != 0 || Input.GetAxis("Horizontal") != 0)
+
+        if (Input.GetAxis("Vertical") != 0 || Input.GetAxis("Horizontal") != 0)
         {
             _body.AddForce(transform.forward * MovementSpeed * Input.GetAxis("Vertical"), ForceMode.Acceleration);
 
@@ -65,55 +59,39 @@ public class PlayerController : MonoBehaviour
             _body.AddForce(new Vector3(0f, JumpStrength * 1000f, 0f), ForceMode.Force);
         }
 
+        SetupCameraPositions();
         CheckCameraCollision();
 
-        if (Input.GetButtonDown("Fire2"))
+        if(Input.GetAxis("Fire2") > 0)
         {
-            StartADS();
-        }
-
-        if(Input.GetButtonUp("Fire2"))
+            SetCameraAds(_currentBoomLength, AdsBoomLength, AdsSpeed);
+        } else
         {
-            StopADS();
+            SetCameraAds(_currentBoomLength, TargetBoomLength, AdsSpeed);
         }
     }
 
-    private void StartADS()
+    void SetCameraAds(float start, float end, float seconds)
     {
-        _adsPos = transform.position + (_camDirNormalized * (_camDirRaw.magnitude / 2));
-
-        _cam.transform.position = Vector3.Lerp(_cam.transform.position, _adsPos, AdsSpeed);
+        _currentBoomLength = Mathf.Lerp(start, end, seconds * Time.deltaTime);
     }
 
-    private void StopADS()
+    void CheckCameraCollision()
     {
-        _adsPos = transform.position + (_camDirNormalized * (_camDirRaw.magnitude * 2));
-
-        _cam.transform.position = Vector3.Lerp(_cam.transform.position, _adsPos, AdsSpeed);
-    }
-
-    private void SetupCameraPositions()
-    {
-        _camDirRaw = (_cam.transform.position - transform.position);
-        _camDirNormalized = _camDirRaw.normalized;
-    }
-
-    private void CheckCameraCollision()
-    {
-        RaycastHit hitInfo;
-        Vector3 _endDir = _camDirNormalized * _camDirRaw.magnitude;
-
-        if (Physics.Raycast(transform.position, _endDir, out hitInfo, _camDirRaw.magnitude, 3))
+        RaycastHit _hitInfo;
+        if (Physics.Linecast(_rotator.transform.position, _baseCameraPos, out _hitInfo, 3))
         {
-            Debug.DrawLine(hitInfo.point, hitInfo.point + (hitInfo.normal * 2), Color.blue);
-            _cam.transform.position = Vector3.Lerp(_cam.transform.position, Vector3.RotateTowards(hitInfo.point + (hitInfo.normal * 2), transform.position, 0f, 0f), AdsSpeed);
-        } else if(_cam.transform.position != transform.position + (_camDirNormalized * _cameraLength))
+            _currentCameraPos = _hitInfo.point;
+            _cam.transform.position = _currentCameraPos;
+        } else
         {
-            Debug.DrawLine(transform.position, transform.position + (_camDirNormalized * _cameraLength), Color.green);
-            Vector3 _rotDir = Vector3.RotateTowards(hitInfo.point + (hitInfo.normal * 2), transform.position, 0f, 0f);
-            _cam.transform.Rotate(_rotDir);
+            _cam.transform.position = _baseCameraPos;
         }
+    }
 
-        //_rotator.transform.Rotate(BoomAddRotation);
+    void SetupCameraPositions()
+    {
+        _baseCameraPos = _rotator.transform.position + ((_rotator.transform.forward * -1) * _currentBoomLength) + BoomAddVector;
+        _cam.transform.localRotation = Quaternion.Euler(BoomAddRotation);
     }
 }
