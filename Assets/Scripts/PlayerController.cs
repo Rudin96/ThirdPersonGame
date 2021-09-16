@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
 
         if(Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
         {
-            _body.transform.Rotate(new Vector3(0f, Input.GetAxis("Mouse X"), 0f));
+            transform.Rotate(new Vector3(0f, Input.GetAxis("Mouse X"), 0f));
             _rotator.transform.Rotate(new Vector3(Input.GetAxis("Mouse Y"), 0f, 0f));
         }
 
@@ -59,9 +59,6 @@ public class PlayerController : MonoBehaviour
             _body.AddForce(new Vector3(0f, JumpStrength * 1000f, 0f), ForceMode.Force);
         }
 
-        SetupCameraPositions();
-        CheckCameraCollision();
-
         if(Input.GetAxis("Fire2") > 0)
         {
             SetCameraAds(_currentBoomLength, AdsBoomLength, AdsSpeed);
@@ -69,6 +66,8 @@ public class PlayerController : MonoBehaviour
         {
             SetCameraAds(_currentBoomLength, TargetBoomLength, AdsSpeed);
         }
+
+        SetupCameraPositions();
     }
 
     void SetCameraAds(float start, float end, float seconds)
@@ -76,22 +75,20 @@ public class PlayerController : MonoBehaviour
         _currentBoomLength = Mathf.Lerp(start, end, seconds * Time.deltaTime);
     }
 
-    void CheckCameraCollision()
+    void SetupCameraPositions()
     {
+        _baseCameraPos = _rotator.transform.position + ((_rotator.transform.forward * -1) * _currentBoomLength) + BoomAddVector;
+        _cam.transform.localRotation = Quaternion.Euler(BoomAddRotation);
+
         RaycastHit _hitInfo;
         if (Physics.Linecast(_rotator.transform.position, _baseCameraPos, out _hitInfo, 3))
         {
             _currentCameraPos = _hitInfo.point;
             _cam.transform.position = _currentCameraPos;
-        } else
+        }
+        else
         {
             _cam.transform.position = _baseCameraPos;
         }
-    }
-
-    void SetupCameraPositions()
-    {
-        _baseCameraPos = _rotator.transform.position + ((_rotator.transform.forward * -1) * _currentBoomLength) + BoomAddVector;
-        _cam.transform.localRotation = Quaternion.Euler(BoomAddRotation);
     }
 }
