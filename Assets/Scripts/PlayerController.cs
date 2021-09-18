@@ -6,9 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     private Rigidbody _body;
     private Transform _playerPos;
-    private float _camAngleX;
-    private float _camAngleY;
-
     public Camera Cam;
 
     [Header("Movement Properties")]
@@ -21,7 +18,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void Update()
+    private void LateUpdate()
     {
         HandlePlayerMovement();
         SetupCameraPositions();
@@ -29,14 +26,7 @@ public class PlayerController : MonoBehaviour
 
     void SetupCameraPositions()
     {
-        _playerPos = transform;
-        _camAngleX = Input.GetAxis("Mouse Y");
-        _camAngleY = Input.GetAxis("Mouse X");
-        if(Cam != null)
-        {
-            Cam.transform.position = _playerPos.position;
-            Cam.transform.rotation = _playerPos.rotation;
-        }
+        
     }
 
     void HandlePlayerMovement()
@@ -48,10 +38,8 @@ public class PlayerController : MonoBehaviour
             _body.AddForce(transform.right * MovementSpeed * Input.GetAxis("Horizontal"), ForceMode.Acceleration);
         }
 
-        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
-        {
-            transform.Rotate(new Vector3(0f, Input.GetAxis("Mouse X"), 0f));
-        }
+        if(Input.GetMouseButton(0) && Input.GetMouseButton(1))
+            _body.AddForce(transform.forward * MovementSpeed, ForceMode.Acceleration);
 
         if (Input.GetButtonDown("Jump"))
         {
