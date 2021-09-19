@@ -21,12 +21,6 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate()
     {
         HandlePlayerMovement();
-        SetupCameraPositions();
-    }
-
-    void SetupCameraPositions()
-    {
-        
     }
 
     void HandlePlayerMovement()

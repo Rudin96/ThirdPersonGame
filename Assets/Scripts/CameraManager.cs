@@ -34,30 +34,24 @@ public class CameraManager : MonoBehaviour
         {
             if (Input.GetMouseButton(0))
             {
-                velocityX = xSpeed * Input.GetAxis("Mouse X") * distance * 0.02f;
-                velocityY = ySpeed * Input.GetAxis("Mouse Y") * distance * 0.02f;
-                if(Input.GetMouseButton(1))
-                {
-                    target.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
-                }
+                SetRotationVelocity();
+                if (Input.GetMouseButton(1))
+                    RotateTarget();
             } else if(Input.GetMouseButton(1))
             {
-                velocityX = xSpeed * Input.GetAxis("Mouse X") * distance * 0.02f;
-                velocityY = ySpeed * Input.GetAxis("Mouse Y") * distance * 0.02f;
-                target.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
-            }
-            else
+                SetRotationVelocity();
+                RotateTarget();
+            } else
             {
                 velocityX = 0;
                 velocityY = 0;
             }
+
             rotationYAxis += velocityX;
             rotationXAxis += velocityY;
             rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
 
-            Quaternion fromRotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0);
-            Quaternion toRotation = Quaternion.Euler(rotationXAxis, rotationYAxis, 0);
-            Quaternion rotation = toRotation;
+            Quaternion rotation = Quaternion.Euler(rotationXAxis, rotationYAxis, 0);
 
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
             
@@ -80,5 +74,16 @@ public class CameraManager : MonoBehaviour
         if (angle > 360f)
             angle -= 360f;
         return Mathf.Clamp(angle, min, max);
+    }
+
+    private void SetRotationVelocity()
+    {
+        velocityX = xSpeed * Input.GetAxis("Mouse X") * distance * 0.02f;
+        velocityY = ySpeed * Input.GetAxis("Mouse Y") * distance * 0.02f;
+    }
+
+    private void RotateTarget()
+    {
+        target.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
     }
 }
